@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasic
-from database import Base, User,Task, get_db, init_users
+from database import User,Task, get_db, init_users
+from models import TaskCreate, TaskUpdate
+
 from pwdlib import PasswordHash
 from pydantic import BaseModel
 
@@ -10,18 +12,6 @@ security = HTTPBasic()
 
 #----
 
-class TaskCreate(BaseModel):
-    title: str
-    description: str | None = None
-    status: bool = False
-    priority: int = 0
-
-class TaskUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    status: bool | None = None
-    priority: int | None = None
-#-----
 @app.on_event("startup")
 def startup():
     init_users()
@@ -81,7 +71,7 @@ def get_task(
     return task
 
 
-@app.post("/api/task")
+@app.post("/api/task", status_code=201)
 def create_task(
     task: TaskCreate,
     user = Depends(authenticate_user),
@@ -125,7 +115,7 @@ def update_task(
     db.refresh(task)
     return task
 
-@app.delete("/api/task/{task_id}")
+@app.delete("/api/task/{task_id}", status_code=204)
 def delete_task(
     task_id: int,
     user = Depends(authenticate_user),

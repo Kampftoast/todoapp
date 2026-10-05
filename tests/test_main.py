@@ -159,4 +159,55 @@ def test_create_task_starts_open():
     response = client.post("/api/task", json=task_data, auth=credentials)
     assert response.status_code == 200
     task = response.json()
-    assert task["status"] is False    
+    assert task["status"] is False
+
+def test_get_task_sorted_by_priority():
+    credentials = authenticate_user("userA", "userA")
+    task_data1 = {"title": "Task 1", "description": "Task 1", "priority": 1}
+    task_data2 = {"title": "Task 2", "description": "Task 2", "priority": 3}
+    task_data3 = {"title": "Task 3", "description": "Task 3", "priority": 2}
+
+    client.post("/api/task", json=task_data1, auth=credentials)
+    client.post("/api/task", json=task_data2, auth=credentials)
+    client.post("/api/task", json=task_data3, auth=credentials)
+
+    response = client.get("/api/tasks?sort=priority", auth=credentials)
+    assert response.status_code == 200
+    tasks = response.json()
+    assert len(tasks) >= 3
+
+    priorities = [task["priority"] for task in tasks]
+    assert priorities == sorted(priorities, reverse=True)
+
+def test_get_task_sorted_by_created_at():
+    credentials = authenticate_user("userA", "userA")
+    task_data1 = {"title": "Task 1", "description": "Task 1", "priority": 1}
+    task_data2 = {"title": "Task 2", "description": "Task 2", "priority": 3}
+    task_data3 = {"title": "Task 3", "description": "Task 3", "priority": 2}
+
+    client.post("/api/task", json=task_data1, auth=credentials)
+    client.post("/api/task", json=task_data2, auth=credentials)
+    client.post("/api/task", json=task_data3, auth=credentials)
+
+    response = client.get("/api/tasks?sort=created_at", auth=credentials)
+    assert response.status_code == 200
+    tasks = response.json()
+    assert len(tasks) >= 3
+
+    created_at_list = [task["created_at"] for task in tasks]
+    assert created_at_list == sorted(created_at_list, reverse=True)
+
+def test_get_tasks_with_pagination():
+    credentials = authenticate_user("userA", "userA")
+    task_data1 = {"title": "Task 1", "description": "Task 1", "priority": 1}
+    task_data2 = {"title": "Task 2", "description": "Task 2", "priority": 3}
+    task_data3 = {"title": "Task 3", "description": "Task 3", "priority": 2}
+
+    client.post("/api/task", json=task_data1, auth=credentials)
+    client.post("/api/task", json=task_data2, auth=credentials)
+    client.post("/api/task", json=task_data3, auth=credentials)
+
+    response = client.get("/api/tasks?skip=1&limit=1", auth=credentials)
+    assert response.status_code == 200
+    tasks = response.json()
+    assert len(tasks) == 1        
