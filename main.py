@@ -48,11 +48,21 @@ def authenticate_user(
 #----
 @app.get("/api/tasks")
 def get_tasks(
+    sort: str | None = None,
+    skip:int = 0,
+    limit:int = 100,
     user = Depends(authenticate_user),
     db = Depends(get_db)
     ):
-    tasks = db.query(Task).filter(Task.user_id == user.id).all()
-    return tasks
+    query = db.query(Task).filter(Task.user_id == user.id)
+
+    if sort == "priority":
+        query = query.order_by(Task.priority.desc())
+
+    if sort == "created_at":
+        query = query.order_by(Task.created_at.desc())
+
+    return query.offset(skip).limit(limit).all()
 
 
 @app.get("/api/task/{task_id}")
