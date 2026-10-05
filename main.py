@@ -13,6 +13,7 @@ security = HTTPBasic()
 class TaskCreate(BaseModel):
     title: str
     description: str | None = None
+    status: bool = False
     priority: int = 0
 
 class TaskUpdate(BaseModel):
