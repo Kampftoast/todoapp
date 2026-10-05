@@ -1,6 +1,13 @@
 from fastapi.testclient import TestClient
 from main import app
 
+from database import get_db
+from tests.test_database import override_get_db, init_users
+
+app.dependency_overrides[get_db] = override_get_db
+
+init_users()
+
 client = TestClient(app)
 
 #---
